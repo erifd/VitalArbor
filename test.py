@@ -1,19 +1,23 @@
 import sys
 from pathlib import Path
 
-# --- Get the absolute path to the 'Image Statistics' folder ---
+# --- Base directory: the folder containing this script (VitalArbor) ---
 base_dir = Path(__file__).resolve().parent
+
+# --- Path to 'Image Statistics' folder ---
 stats_dir = base_dir / "Image Statistics"
 
-# --- Add it to the Python import path ---
+# --- Add 'Image Statistics' to import path ---
 sys.path.append(str(stats_dir))
 
-# --- Now import your function ---
-from brightness import get_Brightness
+# --- Import function ---
+from Image_Statistics.brightness import get_Brightness
 
-# --- Use it! ---
-image_path = r"2025-26 Data Links\10-21-2025\Norway Spruce photos\Norway Spruce.jfif"
-full_image_path = base_dir / image_path
 
-avg = get_Brightness(str(full_image_path), True,False, False)
-print(f"Average brightness: {avg:.2f}")
+# --- Build the full image path (relative to base folder) ---
+image_path = base_dir / r"C:\Users\timishg\Documents\Github\VitalArbor\2025-26_Data_Links\10-21-2025\Norway_Spruce_photos\Norway Spruce.png"
+
+# --- Call the function ---
+avg = get_Brightness(str(image_path), True, False, False)
+
+print(f"Average brightness: {avg:.2f} — hello")
