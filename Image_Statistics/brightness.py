@@ -30,5 +30,5 @@ def get_Brightness(image_path, use_hsv_and_gray, use_hsv, use_gray):
         average_brightness_gray = np.mean(gray)
         average_brighness = average_brightness_gray
         return average_brighness
-
+get_Brightness(r"C:\Users\timishg\Documents\Github\VitalArbor\2025-26_Data_Links\10-21-2025\Norway_Spruce_photos\Norway Spruce.png", True, False, False)
 
