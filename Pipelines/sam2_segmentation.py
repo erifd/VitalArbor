@@ -36,7 +36,7 @@ finally:
     os.chdir(original_dir)
 
 # Load your image
-image_path = r"C:\Users\timishg\Documents\Github\VitalArbor\2025-26_Data_Links\10-21-2025\Norway_Spruce_photos\Norway Spruce.png"
+image_path = r"your_path_here"
 image = Image.open(image_path)
 image_np = np.array(image.convert("RGB"))
 
