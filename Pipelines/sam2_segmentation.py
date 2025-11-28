@@ -40,7 +40,19 @@ image_path = r"your_path_here"
 image = Image.open(image_path)
 image_np = np.array(image.convert("RGB"))
 
+# Create output directory and generate output filename
+# Get the parent directory (one level up from script_dir)
+output_dir = os.path.join(os.path.dirname(script_dir), "Segmented photos")
+os.makedirs(output_dir, exist_ok=True)
+
+# Extract the base filename without extension and create new name
+base_filename = os.path.splitext(os.path.basename(image_path))[0]
+output_filename = f"{base_filename}_crop_out.png"
+saved_filename = output_filename  # Store in variable for later access
+
 print(f"Image loaded: {image_np.shape}")
+print(f"Output will be saved as: {output_filename}")
+print(f"Output directory: {output_dir}")
 print("=== Interactive Segmentation ===")
 print("Left click: Add positive point (include in mask)")
 print("Right click: Add negative point (exclude from mask)")
@@ -166,7 +178,7 @@ def onkey(event):
     elif event.key == 's':  # Save
         if current_mask is not None:
             # Save the cutout image with transparent background
-            cutout_path = os.path.join(script_dir, "segmented_img.png")
+            cutout_path = os.path.join(output_dir, output_filename)
             
             # Create RGBA image
             rgba_image = np.zeros((image_np.shape[0], image_np.shape[1], 4), dtype=np.uint8)
@@ -183,8 +195,9 @@ def onkey(event):
             
             print(f"✓ Saved cutout image to: {cutout_path}")
             
-            # Also save visualization
-            viz_path = os.path.join(script_dir, "contrast_img.png")
+            # Also save visualization with similar naming
+            viz_filename = f"{base_filename}_crop_out_contrast.png"
+            viz_path = os.path.join(output_dir, viz_filename)
             
             fig_save, axes_save = plt.subplots(1, 3, figsize=(18, 6))
             
@@ -229,3 +242,8 @@ update_segmentation()
 
 plt.tight_layout()
 plt.show()
+
+# Access the saved filename variable after the window is closed
+print(f"\nSaved filename variable: {saved_filename}")
+def get_segmented_filename():
+    return saved_filename
