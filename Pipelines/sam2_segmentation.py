@@ -48,7 +48,7 @@ os.makedirs(output_dir, exist_ok=True)
 # Extract the base filename without extension and create new name
 base_filename = os.path.splitext(os.path.basename(image_path))[0]
 output_filename = f"{base_filename}_crop_out.png"
-saved_filename = output_filename  # Store in variable for later access
+saved_file_path = None  # Track the actual saved file path
 
 print(f"Image loaded: {image_np.shape}")
 print(f"Output will be saved as: {output_filename}")
@@ -166,7 +166,7 @@ def onclick(event):
 
 def onkey(event):
     """Handle keyboard presses"""
-    global positive_points, negative_points, current_mask
+    global positive_points, negative_points, current_mask, saved_file_path
     
     if event.key == 'r':  # Reset
         positive_points = []
@@ -179,57 +179,71 @@ def onkey(event):
         if current_mask is not None:
             # Save the cutout image with transparent background
             cutout_path = os.path.join(output_dir, output_filename)
+            saved_file_path = cutout_path  # Store the actual path
             
             # Create RGBA image
             rgba_image = np.zeros((image_np.shape[0], image_np.shape[1], 4), dtype=np.uint8)
             
-            # Copy RGB channels
-            rgba_image[:, :, :3] = image_np
+            # Copy RGB channels ONLY where mask is True
+            for c in range(3):
+                rgba_image[:, :, c] = image_np[:, :, c] * current_mask
             
             # Set alpha channel based on mask (255 where mask is True, 0 where False)
             rgba_image[:, :, 3] = (current_mask * 255).astype(np.uint8)
             
-            # Save as PNG with transparency
-            cutout_img = Image.fromarray(rgba_image, mode='RGBA')
-            cutout_img.save(cutout_path)
-            
-            print(f"✓ Saved cutout image to: {cutout_path}")
-            
-            # Also save visualization with similar naming
-            viz_filename = f"{base_filename}_crop_out_contrast.png"
-            viz_path = os.path.join(output_dir, viz_filename)
-            
-            fig_save, axes_save = plt.subplots(1, 3, figsize=(18, 6))
-            
-            # Original with points
-            axes_save[0].imshow(image_np)
-            if len(positive_points) > 0:
-                pos_pts = np.array(positive_points)
-                axes_save[0].scatter(pos_pts[:, 0], pos_pts[:, 1], c='lime', s=200, 
-                                   marker='*', edgecolors='white', linewidths=2)
-            if len(negative_points) > 0:
-                neg_pts = np.array(negative_points)
-                axes_save[0].scatter(neg_pts[:, 0], neg_pts[:, 1], c='red', s=200, 
-                                   marker='X', edgecolors='white', linewidths=2)
-            axes_save[0].set_title("Input Points")
-            axes_save[0].axis('off')
-            
-            # Segmentation overlay
-            axes_save[1].imshow(image_np)
-            axes_save[1].imshow(current_mask, alpha=0.5, cmap='jet')
-            axes_save[1].set_title("Segmentation Overlay")
-            axes_save[1].axis('off')
-            
-            # Cutout preview (on white background for visualization)
-            axes_save[2].imshow(rgba_image)
-            axes_save[2].set_title("Cutout (saved with transparency)")
-            axes_save[2].axis('off')
-            
-            plt.tight_layout()
-            plt.savefig(viz_path, dpi=150, bbox_inches='tight')
-            plt.close(fig_save)
-            
-            print(f"✓ Saved visualization to: {viz_path}")
+            # Find bounding box of the mask to crop
+            coords = np.argwhere(current_mask)
+            if len(coords) > 0:
+                y_min, x_min = coords.min(axis=0)
+                y_max, x_max = coords.max(axis=0)
+                
+                # Crop to bounding box
+                rgba_cropped = rgba_image[y_min:y_max+1, x_min:x_max+1]
+                
+                # Save as PNG with transparency
+                cutout_img = Image.fromarray(rgba_cropped, mode='RGBA')
+                cutout_img.save(cutout_path)
+                
+                print(f"✓ Saved cutout image to: {cutout_path}")
+                print(f"  Cropped from {rgba_image.shape} to {rgba_cropped.shape}")
+                
+                # Also save visualization with similar naming
+                viz_filename = f"{base_filename}_crop_out_contrast.png"
+                viz_path = os.path.join(output_dir, viz_filename)
+                
+                fig_save, axes_save = plt.subplots(1, 3, figsize=(18, 6))
+                
+                # Original with points
+                axes_save[0].imshow(image_np)
+                if len(positive_points) > 0:
+                    pos_pts = np.array(positive_points)
+                    axes_save[0].scatter(pos_pts[:, 0], pos_pts[:, 1], c='lime', s=200, 
+                                       marker='*', edgecolors='white', linewidths=2)
+                if len(negative_points) > 0:
+                    neg_pts = np.array(negative_points)
+                    axes_save[0].scatter(neg_pts[:, 0], neg_pts[:, 1], c='red', s=200, 
+                                       marker='X', edgecolors='white', linewidths=2)
+                axes_save[0].set_title("Input Points")
+                axes_save[0].axis('off')
+                
+                # Segmentation overlay
+                axes_save[1].imshow(image_np)
+                axes_save[1].imshow(current_mask, alpha=0.5, cmap='jet')
+                axes_save[1].set_title("Segmentation Overlay")
+                axes_save[1].axis('off')
+                
+                # Cutout preview
+                axes_save[2].imshow(rgba_cropped)
+                axes_save[2].set_title("Cutout (saved with transparency)")
+                axes_save[2].axis('off')
+                
+                plt.tight_layout()
+                plt.savefig(viz_path, dpi=150, bbox_inches='tight')
+                plt.close(fig_save)
+                
+                print(f"✓ Saved visualization to: {viz_path}")
+            else:
+                print("ERROR: No mask content found!")
         else:
             print("No segmentation to save yet - add some points first!")
 
@@ -244,6 +258,11 @@ plt.tight_layout()
 plt.show()
 
 # Access the saved filename variable after the window is closed
-print(f"\nSaved filename variable: {saved_filename}")
+if saved_file_path:
+    print(f"\nSaved file path: {saved_file_path}")
+else:
+    print("\nNo file was saved during this session")
+
 def get_segmented_filename():
-    return saved_filename
+    """Returns the path to the saved segmented image, or None if not saved"""
+    return saved_file_path
