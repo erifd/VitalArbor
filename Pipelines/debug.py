@@ -1,5 +1,6 @@
 import cv2
 
+image_path = r"C:\Users\family_2\Documents\GitHub\VitalArbor\Segmented photos\Crabapple_1_crop_out.png"
 
 img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
