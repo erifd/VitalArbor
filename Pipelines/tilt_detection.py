@@ -3,7 +3,6 @@ import numpy as np
 import math
 import os
 import sam2_segmentation
-# sam2_segmentation.run_sam2_segmentation(r"C:\Users\family_2\Documents\GitHub\VitalArbor\2025-26_Data_Links\10-21-2025\Spruce_Photos\Spruce_1_.png")
 
 def detect_tree_tilt(image_path):
     # Check if file exists
@@ -27,15 +26,15 @@ def detect_tree_tilt(image_path):
         print("Created binary from alpha channel")
     else:
         # Convert to grayscale and threshold
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
         print("Created binary from grayscale")
     
     # Step 2: Find lines in binary image using Hough Transform
     height, width = binary.shape
     
-    # Focus on lower 45% for trunk
-    trunk_start = int(height * 0.55)  # Start at 55% down (lower 45%)
+    # Focus on lower 50% for trunk
+    trunk_start = int(height * 0.5)
     trunk_binary = binary.copy()
     trunk_binary[:trunk_start, :] = 0  # Zero out upper portion
     
@@ -49,8 +48,13 @@ def detect_tree_tilt(image_path):
     
     print(f"Detected {len(lines)} lines")
     
-    # Step 3: Filter for ROUGHLY vertical lines (much more lenient)
+    # Step 3: Find where each line intersects the bottom of the image
+    bottom_y = height - 1
+    center_x = width / 2
+    
+    intersections = []
     trunk_lines = []
+    
     for line in lines:
         x1, y1, x2, y2 = line[0]
         
@@ -59,51 +63,78 @@ def detect_tree_tilt(image_path):
         dy = y2 - y1
         
         if dx == 0:
-            angle_from_horizontal = 90  # Perfectly vertical
+            angle_from_horizontal = 90
         else:
             angle_from_horizontal = abs(math.degrees(math.atan2(dy, dx)))
         
-        # Accept lines that are MORE vertical than horizontal
-        # (angle from horizontal > 45 degrees means more vertical than horizontal)
-        if angle_from_horizontal > 30:  # Very lenient - just needs to be somewhat vertical
-            line_length = math.sqrt(dx**2 + dy**2)
-            actual_angle = math.degrees(math.atan2(dy, dx))
-            trunk_lines.append((x1, y1, x2, y2, actual_angle, line_length))
-            print(f"  Line: ({x1},{y1})->({x2},{y2}), angle: {actual_angle:.1f}°, length: {line_length:.1f}")
+        # Only process somewhat vertical lines
+        if angle_from_horizontal > 30:
+            # Extend line to bottom of image
+            # Line equation: y - y1 = m(x - x1), solve for x when y = bottom_y
+            if dy != 0:
+                slope = dx / dy
+                x_at_bottom = x1 + slope * (bottom_y - y1)
+                
+                # Calculate distance from center
+                distance_from_center = x_at_bottom - center_x
+                
+                line_length = math.sqrt(dx**2 + dy**2)
+                actual_angle = math.degrees(math.atan2(dy, dx))
+                
+                intersections.append((x_at_bottom, distance_from_center, line_length))
+                trunk_lines.append((x1, y1, x2, y2, actual_angle, line_length, x_at_bottom))
+                
+                print(f"  Line intersects bottom at x={x_at_bottom:.1f}, distance from center: {distance_from_center:.1f}")
     
-    if not trunk_lines:
-        print("No trunk lines found")
+    if not intersections:
+        print("No valid trunk lines found")
         return None
     
     print(f"Found {len(trunk_lines)} trunk lines")
     
-    # Calculate weighted average angle (weighted by line length)
-    total_weight = sum(line[5] for line in trunk_lines)
-    weighted_angle = sum(line[4] * line[5] for line in trunk_lines) / total_weight
+    # Calculate weighted average bottom intersection point (weighted by line length)
+    total_weight = sum(intersection[2] for intersection in intersections)
+    weighted_bottom_x = sum(intersection[0] * intersection[2] for intersection in intersections) / total_weight
     
-    # Tilt angle from vertical (0 = perfectly vertical, which is 90 from horizontal)
-    tilt_angle = -1* (weighted_angle - 90)
-    if tilt_angle > 90:
-        tilt_angle = 180 - tilt_angle
+    # Calculate tilt angle based on where trunk hits bottom vs center
+    # Positive angle = tilted right, negative = tilted left
+    offset_from_center = weighted_bottom_x - center_x
     
-    print(f"Weighted angle from horizontal: {weighted_angle:.2f}°")
-    print(f"Tilt angle from vertical: {tilt_angle:.2f}°")
+    # Calculate angle: arctan(horizontal offset / vertical distance)
+    # Using full height as vertical distance for the angle calculation
+    tilt_angle = math.degrees(math.atan(offset_from_center / height))
+    
+    print(f"Weighted bottom intersection: x={weighted_bottom_x:.1f}")
+    print(f"Center x: {center_x:.1f}")
+    print(f"Offset from center: {offset_from_center:.1f} pixels")
+    print(f"Tilt angle: {tilt_angle:.2f}°")
     
     # Visualize
     result_img = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
     
     # Draw all detected trunk lines
-    for x1, y1, x2, y2, _, length in trunk_lines:
+    for x1, y1, x2, y2, _, length, x_bottom in trunk_lines:
         # Color by length - longer lines are brighter
         intensity = min(255, int(100 + (length / height) * 155))
         cv2.line(result_img, (x1, y1), (x2, y2), (0, intensity, 0), 2)
+        
+        # Draw extension to bottom
+        cv2.line(result_img, (x2, y2), (int(x_bottom), bottom_y), (0, intensity//2, 0), 1)
+        
+        # Mark bottom intersection
+        cv2.circle(result_img, (int(x_bottom), bottom_y), 5, (0, 255, 255), -1)
     
     # Draw trunk region boundary
     cv2.line(result_img, (0, trunk_start), (width, trunk_start), (255, 0, 0), 2)
     
-    # Draw a reference vertical line
-    center_x = width // 2
-    cv2.line(result_img, (center_x, trunk_start), (center_x, height), (0, 0, 255), 2)
+    # Draw center vertical reference line
+    cv2.line(result_img, (int(center_x), trunk_start), (int(center_x), height), (0, 0, 255), 2)
+    
+    # Draw weighted average bottom point
+    cv2.circle(result_img, (int(weighted_bottom_x), bottom_y), 10, (255, 0, 255), -1)
+    
+    # Draw angle visualization line from center top to weighted bottom
+    cv2.line(result_img, (int(center_x), trunk_start), (int(weighted_bottom_x), bottom_y), (255, 0, 255), 3)
     
     # Draw angle text
     cv2.putText(result_img, f'Tilt: {tilt_angle:.2f} deg', 
@@ -112,30 +143,3 @@ def detect_tree_tilt(image_path):
                 (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     
     return tilt_angle, result_img, binary
-
-# Usage
-# image_path = r"C:\Users\family_2\Documents\GitHub\VitalArbor\Segmented photos\Spruce_1__crop_out.png"
-# print(f"Checking if file exists: {os.path.exists(image_path)}")
-# print(f"Full path: {os.path.abspath(image_path)}")
-
-# result = detect_tree_tilt(image_path)
-# if result is not None:
-#     tilt, result_img, binary = result
-#     print(f"\n=== FINAL RESULT ===")
-#     print(f"Tree tilt angle: {tilt:.2f} degrees from vertical")
-    
-#     # Display binary and result side by side
-#     display_height = 600
-#     aspect_ratio = binary.shape[1] / binary.shape[0]
-#     display_width = int(display_height * aspect_ratio)
-    
-#     binary_display = cv2.resize(cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR), (display_width, display_height))
-#     result_display = cv2.resize(result_img, (display_width, display_height))
-    
-#     combined = np.hstack([binary_display, result_display])
-    
-#     cv2.imshow('Binary | Detected Lines', combined)
-#     cv2.waitKey(0)
-#     cv2.destroyAllWindows()
-# else:
-#     print("Could not detect tree trunk")
