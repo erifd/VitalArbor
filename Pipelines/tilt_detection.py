@@ -26,8 +26,8 @@ def detect_tree_tilt(image_path):
         print("Created binary from alpha channel")
     else:
         # Convert to grayscale and threshold
-        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, binary = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
         print("Created binary from grayscale")
     
     # Step 2: Find lines in binary image using Hough Transform
@@ -141,5 +141,5 @@ def detect_tree_tilt(image_path):
                 (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     cv2.putText(result_img, f'{len(trunk_lines)} lines', 
                 (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    
-    return tilt_angle, result_img, binary
+    trunk_lines_count = len(trunk_lines)
+    return tilt_angle, result_img, binary, trunk_lines_count

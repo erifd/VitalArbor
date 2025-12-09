@@ -1,6 +1,7 @@
 import sam2_segmentation
 import tilt_detection
 import width_of_trunk
+import risk_score
 import cv2
 import os
 import numpy as np
@@ -50,7 +51,7 @@ else:
 
     result = tilt_detection.detect_tree_tilt(segmented_photo_path)
     if result is not None:
-        tilt, result_img, binary = result
+        tilt, result_img, binary, trunk_lines_count = result
         print(f"\n=== FINAL RESULT ===")
         print(f"Tree tilt angle: {tilt:.2f} degrees from vertical")
         
@@ -69,3 +70,9 @@ else:
         cv2.destroyAllWindows()
     else:
         print("Could not detect tree trunk")
+
+# Get Risk Score
+risk_score_value = risk_score.give_risk_score(tilt, trunk_lines_count)
+decision = risk_score.get_risk_category(risk_score_value)
+print("Tree Risk at:", decision)
+risk_score.display_risk_gradient(risk_score_value, tilt)
