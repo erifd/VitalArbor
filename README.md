@@ -21,7 +21,7 @@ Currently, only the segmentation pipeline using **SAM2** has worked, and you can
 
 <details>
 <summary>Running the code for all of the pipelines?</summary>
-1. You will need to use cmd again here, by running cd your path to VitalArbor
+1. Use cd in cmd to to get to the folder of Pipelines again, as the pipeline runner code is stored here.
 
 2. Next, you will do `python pipeline_runner.py`
 3. You will be prompted with questions about where you want the photo to be.
