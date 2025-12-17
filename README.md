@@ -30,7 +30,7 @@ Currently, only the segmentation pipeline using **SAM2** has worked, and you can
 6. You will then get details about the tree, like the tilt angle.  
 </details>
 
-   
+Additionally, if you want to see more about the pipelines, and their current errors, visit [VitalArbor statistics Molab](https://molab.marimo.io/notebooks/nb_H1GAb8eWgBhqYmGYULynUu) to view changes in tilt angles, and errors.   
 
 **IMPORTANT NOTE**
 
