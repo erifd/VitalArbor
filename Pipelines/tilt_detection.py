@@ -19,16 +19,32 @@ def detect_tree_tilt(image_path):
     
     print(f"Image shape: {img.shape}")
     
-    # Step 1: Convert to binary image
+    # Step 1: Convert to binary image with better visibility
     if len(img.shape) == 3 and img.shape[2] == 4:
-        # Use alpha channel as mask
-        binary = (img[:, :, 3] > 127).astype(np.uint8) * 255
-        print("Created binary from alpha channel")
-    else:
-        # Convert to grayscale and threshold
+        # Use alpha channel as mask - anything with alpha > 20 is tree
+        binary = (img[:, :, 3] > 20).astype(np.uint8) * 255
+        print("Created binary from alpha channel (threshold=20)")
+    elif len(img.shape) == 3:
+        # Convert to grayscale first
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-        print("Created binary from grayscale")
+        # Use Otsu's method for automatic thresholding to preserve detail
+        _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        print("Created binary from grayscale using Otsu's method")
+    else:
+        # Already grayscale
+        _, binary = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        print("Created binary from grayscale using Otsu's method")
+    
+    # Optional: Apply morphological operations to clean up the binary image
+    # Remove small noise
+    kernel_small = np.ones((3, 3), np.uint8)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel_small)
+    
+    # Fill small holes
+    kernel_medium = np.ones((5, 5), np.uint8)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel_medium)
+    
+    print("Applied morphological operations to clean binary image")
     
     # Step 2: Find lines in binary image using Hough Transform
     height, width = binary.shape

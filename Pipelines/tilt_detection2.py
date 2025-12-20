@@ -78,9 +78,5 @@ def analyze_tree(segmented_image_path):
 
     vis.save("tree_with_axis.png")
 
-    return angle_deg
+    return 180 - angle_deg
 
-
-if __name__ == "__main__":
-    angle = analyze_tree("C:\\Users\\family_2\\Documents\\GitHub\\VitalArbor\\width_visualization_with_trunk.png")
-    print(f"Angle from vertical: {angle:.2f}°")
