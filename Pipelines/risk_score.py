@@ -1,3 +1,226 @@
+
+SPECIES_RISK_FACTORS = {
+
+    # Alders (Alnus spp.)
+
+    "alnus rubra": {  # Red alder
+        "root_risk": 0.9,
+        "wood_risk": 0.8,
+        "growth_risk": 0.7,
+    },
+
+    "alnus incana": {  # Gray alder
+        "root_risk": 0.85,
+        "wood_risk": 0.75,
+        "growth_risk": 0.7,
+    },
+
+    "alnus glutinosa": {  # Black alder
+        "root_risk": 0.85,
+        "wood_risk": 0.7,
+        "growth_risk": 0.65,
+    },
+
+    "alnus viridis": {  # Green alder
+        "root_risk": 0.8,
+        "wood_risk": 0.7,
+        "growth_risk": 0.7,
+    },
+
+    "alnus serrulata": {  # Hazel alder
+        "root_risk": 0.8,
+        "wood_risk": 0.65,
+        "growth_risk": 0.7,
+    },
+
+    # Willows (Salix spp.)
+
+    "salix babylonica": {  # Weeping willow
+        "root_risk": 0.95,
+        "wood_risk": 0.75,
+        "growth_risk": 0.85,
+    },
+
+    "salix lucida": {  # Shining willow
+        "root_risk": 0.9,
+        "wood_risk": 0.7,
+        "growth_risk": 0.8,
+    },
+
+    "salix nigra": {  # Black willow
+        "root_risk": 0.95,
+        "wood_risk": 0.7,
+        "growth_risk": 0.85,
+    },
+
+    "salix alba": {  # White willow
+        "root_risk": 0.9,
+        "wood_risk": 0.7,
+        "growth_risk": 0.8,
+    },
+
+    "salix fragilis": {  # Crack willow
+        "root_risk": 0.9,
+        "wood_risk": 0.8,
+        "growth_risk": 0.8,
+    },
+
+    "salix exigua": {  # Coyote willow
+        "root_risk": 0.85,
+        "wood_risk": 0.65,
+        "growth_risk": 0.75,
+    },
+
+    "salix scouleriana": {  # Scouler's willow (PNW)
+        "root_risk": 0.85,
+        "wood_risk": 0.65,
+        "growth_risk": 0.75,
+    },
+
+    # Poplars and Cottonwoods
+
+    "populus trichocarpa": {  # Black cottonwood
+        "root_risk": 0.95,
+        "wood_risk": 0.85,
+        "growth_risk": 0.9,
+    },
+
+    "populus deltoides": {  # Eastern cottonwood
+        "root_risk": 0.95,
+        "wood_risk": 0.8,
+        "growth_risk": 0.9,
+    },
+
+    "populus tremuloides": {  # Quaking aspen
+        "root_risk": 0.8,
+        "wood_risk": 0.6,
+        "growth_risk": 0.75,
+    },
+
+    "populus nigra": {  # Black poplar
+        "root_risk": 0.9,
+        "wood_risk": 0.75,
+        "growth_risk": 0.8,
+    },
+
+    # Maples
+
+    "acer saccharinum": {  # Silver maple
+        "root_risk": 0.85,
+        "wood_risk": 0.8,
+        "growth_risk": 0.7,
+    },
+
+    "acer macrophyllum": {  # Bigleaf maple (PNW)
+        "root_risk": 0.7,
+        "wood_risk": 0.65,
+        "growth_risk": 0.7,
+    },
+
+    "acer negundo": {  # Boxelder
+        "root_risk": 0.8,
+        "wood_risk": 0.75,
+        "growth_risk": 0.8,
+    },
+
+    # Birches
+
+    "betula papyrifera": {  # Paper birch
+        "root_risk": 0.7,
+        "wood_risk": 0.6,
+        "growth_risk": 0.6,
+    },
+
+    "betula pendula": {  # Silver birch
+        "root_risk": 0.75,
+        "wood_risk": 0.6,
+        "growth_risk": 0.65,
+    },
+
+    # Spruce and Fir
+
+    "picea sitchensis": {  # Sitka spruce
+        "root_risk": 0.9,
+        "wood_risk": 0.5,
+        "growth_risk": 0.6,
+    },
+
+    "picea glauca": {  # White spruce
+        "root_risk": 0.85,
+        "wood_risk": 0.55,
+        "growth_risk": 0.6,
+    },
+
+    "pseudotsuga menziesii": {  # Douglas-fir
+        "root_risk": 0.7,
+        "wood_risk": 0.4,
+        "growth_risk": 0.5,
+    },
+
+    # Other Species High Risk
+
+    "pyrus calleryana": {  # Bradford pear
+        "root_risk": 0.6,
+        "wood_risk": 0.95,
+        "growth_risk": 0.7,
+    },
+
+    "fraxinus latifolia": {  # Oregon ash
+        "root_risk": 0.7,
+        "wood_risk": 0.55,
+        "growth_risk": 0.6,
+    },
+
+    "ulmus americana": {  # American elm (weak in old age)
+        "root_risk": 0.7,
+        "wood_risk": 0.6,
+        "growth_risk": 0.7,
+    },
+
+    "liquidambar styraciflua": {  # Sweetgum
+        "root_risk": 0.75,
+        "wood_risk": 0.6,
+        "growth_risk": 0.7,
+    },
+
+    "ailanthus altissima": {  # Tree-of-heaven (weak wood, invasive)
+        "root_risk": 0.8,
+        "wood_risk": 0.55,
+        "growth_risk": 0.9,
+    },
+
+    "eucalyptus globulus": {  # Blue gum eucalyptus
+        "root_risk": 0.85,
+        "wood_risk": 0.7,
+        "growth_risk": 0.9,
+    },
+
+}
+
+
+def species_structural_risk(species_name):
+    """
+    Returns a 0.0–1.0 structural risk multiplier based on species traits.
+    If species is unknown, returns a neutral multiplier of 0.5.
+    """
+
+    if not species_name:
+        return 0.5
+
+    species = species_name.lower().strip()
+
+    if species not in SPECIES_RISK_FACTORS:
+        return 0.5
+
+    traits = SPECIES_RISK_FACTORS[species]
+
+    return (
+        0.5 * traits["root_risk"] +
+        0.3 * traits["wood_risk"] +
+        0.2 * traits["growth_risk"]
+    )
+
+
 def give_risk_score(tilt_angle, trunk_lines_count=None):
     """
     Calculate tree fall risk score based on tilt angle and other factors.
@@ -22,12 +245,15 @@ def give_risk_score(tilt_angle, trunk_lines_count=None):
     if abs_tilt <= 10:
         # Low risk: linear scale from 1 to 10
         risk_score = 1 + (abs_tilt / 10.0) * 9
+
     elif abs_tilt <= 20:
         # Moderate risk: linear scale from 11 to 20
         risk_score = 11 + ((abs_tilt - 10) / 10.0) * 9
+
     elif abs_tilt <= 30:
         # High risk: linear scale from 21 to 30
         risk_score = 21 + ((abs_tilt - 20) / 10.0) * 9
+
     else:
         # Critical risk: linear scale from 31 to 40, capped at 40
         risk_score = 31 + min((abs_tilt - 30) / 10.0, 1.0) * 9
@@ -39,6 +265,7 @@ def give_risk_score(tilt_angle, trunk_lines_count=None):
         risk_score = min(risk_score + 2, 40)
     
     return round(risk_score, 1)
+
 
 
 def get_risk_category(risk_score):
@@ -53,12 +280,27 @@ def get_risk_category(risk_score):
         return "CRITICAL RISK", "red"
 
 
-def display_risk_gradient(risk_score, tilt_angle):
+def combined_tree_risk(multiplier, tilt_angle, species_name, trunk_lines_count=None):
+    """
+    Combines tilt-based risk with species structural risk.
+    Returns a final 1–40 score.
+    """
+
+    tilt_risk = give_risk_score(tilt_angle, trunk_lines_count)
+    species_risk = species_structural_risk(species_name)
+
+    # Apply multiplier: 0.8× to 1.2× depending on species weakness
+    adjusted_risk = tilt_risk * (0.8 + species_risk * 0.4) * multiplier
+
+    adjusted_risk = max(1, min(40, adjusted_risk))
+    return round(adjusted_risk, 1)
+
+
+def display_risk_gradient(risk_score, tilt_angle, diagnosis, fixes):
     """
     Display a colorful gradient bar in the terminal showing risk level.
     """
     
-    # Terminal color codes
     COLORS = {
         'reset': '\033[0m',
         'bold': '\033[1m',
@@ -70,7 +312,6 @@ def display_risk_gradient(risk_score, tilt_angle):
         'cyan': '\033[96m',
     }
     
-    # Create gradient bar
     bar_length = 40
     marker_position = int((risk_score - 1) / 39 * (bar_length - 1))
     
@@ -78,48 +319,38 @@ def display_risk_gradient(risk_score, tilt_angle):
     print(f"{COLORS['bold']}TREE FALL RISK ASSESSMENT{COLORS['reset']}")
     print("="*60)
     
-    # Display tilt angle
     print(f"\n{COLORS['cyan']}Tilt Angle:{COLORS['reset']} {abs(tilt_angle):.2f}° from vertical")
     direction = "RIGHT" if tilt_angle > 0 else "LEFT"
     if abs(tilt_angle) > 0.5:
         print(f"{COLORS['cyan']}Direction:{COLORS['reset']} Leaning {direction}")
     
-    # Display risk score
     category, _ = get_risk_category(risk_score)
     print(f"\n{COLORS['cyan']}Risk Score:{COLORS['reset']} {risk_score:.1f} / 40")
     print(f"{COLORS['cyan']}Category:{COLORS['reset']} {category}")
     
-    # Build the gradient bar
     print(f"\n{COLORS['bold']}Risk Level:{COLORS['reset']}")
     print("└─ 1" + " " * (bar_length - 6) + "40 ─┘")
     
     bar = ""
     for i in range(bar_length):
-        # Determine color for this segment
         segment_score = 1 + (i / (bar_length - 1)) * 39
         
         if segment_score <= 10:
             color = COLORS['green']
-            char = "█"
         elif segment_score <= 20:
             color = COLORS['yellow']
-            char = "█"
         elif segment_score <= 30:
             color = COLORS['orange']
-            char = "█"
         else:
             color = COLORS['red']
-            char = "█"
         
-        # Add marker at risk score position
         if i == marker_position:
             bar += f"{COLORS['blue']}{COLORS['bold']}▼{COLORS['reset']}"
         else:
-            bar += f"{color}{char}{COLORS['reset']}"
+            bar += f"{color}█{COLORS['reset']}"
     
     print("   " + bar)
     
-    # Add legend
     print("\n" + " " * (marker_position + 3) + f"{COLORS['blue']}│{COLORS['reset']}")
     print(" " * (marker_position + 2) + f"{COLORS['blue']}{risk_score:.1f}{COLORS['reset']}")
     
@@ -128,23 +359,24 @@ def display_risk_gradient(risk_score, tilt_angle):
           f"{COLORS['orange']}■{COLORS['reset']} High (21-30)   " +
           f"{COLORS['red']}■{COLORS['reset']} Critical (31-40)")
     
-    # Risk interpretation
     print("\n" + "-"*60)
     print(f"{COLORS['bold']}INTERPRETATION:{COLORS['reset']}")
     
     if risk_score <= 10:
         print(f"{COLORS['green']}✓{COLORS['reset']} Tree appears stable with minimal lean.")
-        print("  No immediate action required. Monitor during annual inspections.")
+        print("Diagnosis of tree:", diagnosis)
+        print("Fixes/reccomendations:", fixes)
     elif risk_score <= 20:
         print(f"{COLORS['yellow']}⚠{COLORS['reset']} Tree has noticeable lean.")
-        print("  Recommend inspection by arborist within 1 year.")
+        print("Diagnosis of tree:", diagnosis)
+        print("Fixes/reccomendations:", fixes)
     elif risk_score <= 30:
         print(f"{COLORS['orange']}⚠{COLORS['reset']} Tree has significant lean - potential concern.")
-        print("  Recommend professional assessment within 6 months.")
-        print("  May need monitoring or support if near structures.")
+        print("Diagnosis of tree:", diagnosis)
+        print("Fixes/reccomendations:", fixes)
     else:
         print(f"{COLORS['red']}✗{COLORS['reset']} Tree has severe lean - elevated fall risk.")
-        print("  Consult certified arborist within 1-3 months.")
-        print("  Consider remediation options or removal if necessary.")
+        print("Diagnosis of tree:", diagnosis)
+        print("Fixes/reccomendations:", fixes)
     
     print("="*60 + "\n")

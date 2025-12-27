@@ -105,5 +105,10 @@ index.html
 index-*.html
 index-*/.html
 
+# Confidential API keys
+API_Key_storage.py
+API_Key_storage-*.py
+API_Key_storage-*/.py
+
 
 
