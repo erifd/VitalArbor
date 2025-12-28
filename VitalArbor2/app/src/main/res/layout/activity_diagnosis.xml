@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAF5E6"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload Tree Images for Diagnosis"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload 3 images of your tree from different angles"
+            android:textSize="12sp"
+            android:textColor="#646464"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Image 1 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1. Tree Classification Photo"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="24dp"/>
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="#FFFFFF"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp"
+            android:contentDescription="Classification Photo"/>
+
+        <TextView
+            android:id="@+id/imageLabel1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No image selected"
+            android:textSize="11sp"
+            android:textColor="#969696"
+            android:layout_marginTop="4dp"/>
+
+        <Button
+            android:id="@+id/selectBtn1"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Select Image"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#87CEEB"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Image 2 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2. Tilt Detection Photo"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="16dp"/>
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="#FFFFFF"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp"
+            android:contentDescription="Tilt Detection Photo"/>
+
+        <TextView
+            android:id="@+id/imageLabel2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No image selected"
+            android:textSize="11sp"
+            android:textColor="#969696"
+            android:layout_marginTop="4dp"/>
+
+        <Button
+            android:id="@+id/selectBtn2"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Select Image"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#87CEEB"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Image 3 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3. Trunk to Ground Photo"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="16dp"/>
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="#FFFFFF"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="8dp"
+            android:contentDescription="Trunk to Ground Photo"/>
+
+        <TextView
+            android:id="@+id/imageLabel3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No image selected"
+            android:textSize="11sp"
+            android:textColor="#969696"
+            android:layout_marginTop="4dp"/>
+
+        <Button
+            android:id="@+id/selectBtn3"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Select Image"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#87CEEB"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Options -->
+        <CheckBox
+            android:id="@+id/useCutoutCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Use trunk cutout for analysis"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tilt Detection Method:"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="12dp"/>
+
+        <Spinner
+            android:id="@+id/methodSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Diagnose Button -->
+        <Button
+            android:id="@+id/diagnoseBtn"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Start Diagnosis"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:backgroundTint="#8BC34A"
+            android:layout_marginTop="20dp"/>
+
+        <TextView
+            android:id="@+id/progressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="12dp"
+            android:textSize="12sp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</ScrollView>
