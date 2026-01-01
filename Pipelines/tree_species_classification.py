@@ -77,7 +77,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
     species = best.get('species')
     clean_name = species.get("scientificNameWithoutAuthor", species.get("scientificName"))
     if need_family:
-        if score >0.3:
+        if score > 0.8:
             multiplier = 1
             if isinstance(species, dict):
                 # Family
@@ -100,8 +100,8 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 family = "Unknown"
                 primary_common = "Unknown"
             return multiplier, clean_name, family, score
-        elif score < 0.3 and score > 0.2:
-            multiplier = 0.5
+        elif score < 0.8 and score > 0.5:
+            multiplier = 0.75
             if isinstance(species, dict):
                     # Family
                     family_field = species.get('family')
@@ -125,7 +125,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
             return multiplier, clean_name, family, score
 
         else:
-            multiplier = score
+            multiplier = 0.45
             if isinstance(species, dict):
                 # Family
                 family_field = species.get('family')
@@ -148,7 +148,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 primary_common = "Unknown"
             return multiplier, clean_name, family, score
     elif need_common_name:
-        if score > 0.3:
+        if score > 0.8:
             multiplier = 1
             if isinstance(species, dict):
                 # Family
@@ -171,8 +171,8 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 family = "Unknown"
                 primary_common = "Unknown"
             return multiplier, clean_name, primary_common, score
-        elif score < 0.3 and score > 0.2:
-            multiplier = 0.5
+        elif score < 0.8 and score > 0.5:
+            multiplier = 0.75
             if isinstance(species, dict):
                 # Family
                 family_field = species.get('family')
@@ -195,7 +195,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 primary_common = "Unknown"
             return multiplier, clean_name, primary_common
         else:
-            multiplier = score
+            multiplier = 0.45
             if isinstance(species, dict):
                 # Family
                 family_field = species.get('family')
@@ -218,7 +218,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 primary_common = "Unknown"
             return multiplier, clean_name, primary_common
     elif need_family and need_common_name:
-        if score > 0.3:
+        if score > 0.8:
             multiplier = 1
             if isinstance(species, dict):
                 # Family
@@ -241,8 +241,8 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 family = "Unknown"
                 primary_common = "Unknown"
             return multiplier, clean_name, family, primary_common
-        elif score < 0.3 and score > 0.2:
-            multiplier = 0.5
+        elif score < 0.8 and score > 0.5:
+            multiplier = 0.75
             if isinstance(species, dict):
                 # Family
                 family_field = species.get('family')
@@ -265,7 +265,7 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 primary_common = "Unknown"
             return multiplier, clean_name, family, primary_common
         else:
-            multiplier = score
+            multiplier = 0.45
             if isinstance(species, dict):
                 # Family
                 family_field = species.get('family')
@@ -288,12 +288,12 @@ def get_species_info(API_KEY, image_path, need_family, need_common_name):
                 primary_common = "Unknown"
             return multiplier, clean_name, family, primary_common
     else:
-        if score > 0.3:
+        if score > 0.8:
             multiplier = 1
             return multiplier, clean_name
-        elif score < 0.3 and score > 0.2:
-            multiplier = 0.5
+        elif score < 0.8 and score > 0.5:
+            multiplier = 0.75
             return multiplier, clean_name
         else:
-            multiplier = score
+            multiplier = 0.45
             return multiplier, clean_name

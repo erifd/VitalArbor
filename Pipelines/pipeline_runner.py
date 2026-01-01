@@ -80,21 +80,34 @@ def display_and_save_results(tilt, result_img, binary, trunk_lines_count, analys
     else:
         print("(Note: Method returned angle only, no visualization available)")
 
+def segment_and_get_path(image_path, description="image"):
+    """
+    Segment an image and return the segmented path.
+    Returns: segmented path or None if failed
+    """
+    if image_path and os.path.exists(image_path):
+        print(f"Segmenting {description}: {image_path}")
+        sam2_segmentation.run_sam2_segmentation(image_path)
+        segmented_path = sam2_segmentation.get_segmented_filename()
+        print(f"{description.capitalize()} segmentation saved to: {segmented_path}")
+        return segmented_path
+    else:
+        print(f"Warning: {description.capitalize()} not found or not provided: {image_path}")
+        return None
+
 def main():
     """Main function to run tree analysis pipeline with tilt detection options."""
     
     # Get photo paths from user
     # Check if we have command-line arguments from Java
-    if len(sys.argv) >= 6:
+    if len(sys.argv) >= 5:
         photo = sys.argv[1]
         tilt_photo = sys.argv[2]
-        backup = sys.argv[3]
-        use_cutout_input = sys.argv[4]
-        detection_method = sys.argv[5]
+        use_cutout_input = sys.argv[3]
+        detection_method = sys.argv[4]
     else:
         photo = str(input("Enter the complete path of the photo you want to process for tree classification: ")).strip()
         tilt_photo = str(input("Enter the complete path of the photo you want to process for tilt detection: ")).strip()
-        backup = str(input("Enter the complete path of the photo you want to process for backup tilt detection (aka a trunk to ground image): ")).strip()
         use_cutout_input = str(input("Do you want to use a cutout of the photo? (y/n): ")).lower().strip()
     
         # Ask which tilt detection method to use
@@ -107,34 +120,15 @@ def main():
     # Initialize paths
     segmented_photo_path = None
     segmented_classification_path = None
-    segmented_backup_path = None
     
-    # Run SAM2 segmentation and store results
+    # Run SAM2 segmentation for primary images only
     print("\n=== Running SAM2 Segmentation ===")
     
-    if tilt_photo and os.path.exists(tilt_photo):
-        print(f"Segmenting tilt photo: {tilt_photo}")
-        sam2_segmentation.run_sam2_segmentation(tilt_photo)
-        segmented_photo_path = sam2_segmentation.get_segmented_filename()
-        print(f"Tilt segmentation saved to: {segmented_photo_path}")
-    else:
-        print(f"Warning: Tilt photo not found or not provided: {tilt_photo}")
+    # Segment tilt photo
+    segmented_photo_path = segment_and_get_path(tilt_photo, "tilt photo")
     
-    if photo and os.path.exists(photo):
-        print(f"Segmenting classification photo: {photo}")
-        sam2_segmentation.run_sam2_segmentation(photo)
-        segmented_classification_path = sam2_segmentation.get_segmented_filename()
-        print(f"Classification segmentation saved to: {segmented_classification_path}")
-    else:
-        print(f"Warning: Classification photo not found or not provided: {photo}")
-    
-    if backup and os.path.exists(backup):
-        print(f"Segmenting backup photo: {backup}")
-        sam2_segmentation.run_sam2_segmentation(backup)
-        segmented_backup_path = sam2_segmentation.get_segmented_filename()
-        print(f"Backup segmentation saved to: {segmented_backup_path}")
-    else:
-        print(f"Warning: Backup photo not found or not provided: {backup}")
+    # Segment classification photo
+    segmented_classification_path = segment_and_get_path(photo, "classification photo")
     
     # Determine which image to analyze for tilt detection
     analysis_path = None
@@ -157,7 +151,7 @@ def main():
     else:
         print("ERROR: Primary tilt photo segmentation failed or file not found")
     
-    # Run tilt detection with fallback to backup
+    # Run tilt detection
     tilt = None
     result_img = None
     binary = None
@@ -176,21 +170,38 @@ def main():
         if result is not None:
             tilt, result_img, binary, trunk_lines_count = result
             display_and_save_results(tilt, result_img, binary, trunk_lines_count, analysis_path, method_name)
-        else:
-            print(f"\nWARNING: Primary tilt detection failed. Attempting backup photo...")
     
-    # Try backup if primary failed
-    if tilt is None and segmented_backup_path and os.path.exists(segmented_backup_path):
-        print(f"\nAttempting tilt detection on backup image: {segmented_backup_path}")
-        result = run_tilt_detection(segmented_backup_path, detection_method)
+    # If primary failed, ask for backup images
+    while tilt is None:
+        print("\n" + "="*60)
+        print("TILT DETECTION FAILED")
+        print("="*60)
+        backup_path = input("\nEnter path to a backup image (or 'skip' to continue without tilt detection): ").strip()
         
-        if result is not None:
-            tilt, result_img, binary, trunk_lines_count = result
-            display_and_save_results(tilt, result_img, binary, trunk_lines_count, segmented_backup_path, f"{method_name} (Backup)")
+        if backup_path.lower() == 'skip':
+            print("\nSkipping tilt detection. Continuing with analysis...")
+            break
+        
+        if not os.path.exists(backup_path):
+            print(f"ERROR: File not found: {backup_path}")
+            continue
+        
+        # Segment the backup image
+        print("\n=== Segmenting Backup Image ===")
+        segmented_backup = segment_and_get_path(backup_path, "backup photo")
+        
+        if segmented_backup and os.path.exists(segmented_backup):
+            print(f"\nAttempting tilt detection on backup image: {segmented_backup}")
+            result = run_tilt_detection(segmented_backup, detection_method)
+            
+            if result is not None:
+                tilt, result_img, binary, trunk_lines_count = result
+                display_and_save_results(tilt, result_img, binary, trunk_lines_count, segmented_backup, f"{method_name} (Backup)")
+                break
+            else:
+                print("\nTilt detection failed on this backup image as well.")
         else:
-            print("\nERROR: Both primary and backup tilt detection failed.")
-    elif tilt is None:
-        print("\nERROR: Tilt detection failed and no backup photo available.")
+            print("\nERROR: Failed to segment the backup image.")
     
     # Perform tree species classification
     multiplier = 1.0  # Default multiplier

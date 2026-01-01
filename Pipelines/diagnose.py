@@ -116,18 +116,11 @@ Provide actionable recommendations organized as follows:
 
 1. IMMEDIATE SAFETY CONCERNS: If any exist, state them clearly and recommend consulting a certified arborist immediately.
 
-2. HOMEOWNER-SAFE ACTIONS: List practical steps that a homeowner can safely perform without specialized equipment or climbing:
-   - Basic care (watering, mulching)
-   - Simple pruning of small dead branches (ground level only)
-   - Monitoring instructions
-   
-3. PROFESSIONAL CONSULTATION: Clearly state when professional help is needed for:
-   - Large branch removal
-   - Tree climbing work
-   - Pesticide/fungicide application
-   - Structural assessment
+2. HOMEOWNER-SAFE ACTIONS: List steps to take care of the specific tree issues that a honemeowner can safely perform. Be specific about treatments, and tell them what problems are arising that they need to care for themselves. NO GENERALIZATIONS.
+   Elaborate on how to implement these actions, why they are necessary, point to specific parts on the tree, and list multiple actions.
+3. PROFESSIONAL CONSULTATION: Clearly state when professional help is needed for something, and recommend what the homeowner should tell the arborist to help them with, and solve any problems that could lead to tree failure.
 
-Keep recommendations specific, safety-focused, and practical. Do not suggest any actions that could put a homeowner at risk of injury.
+Do not suggest any actions that could put a homeowner at risk of injury.
 Your recommendations should be personalized to this specific tree, based on the diagnosis and image provided. You may not make generalized statements."""
 
     try:
@@ -169,16 +162,3 @@ Your recommendations should be personalized to this specific tree, based on the 
         raise RuntimeError("Request timed out after 60 seconds")
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"Network error occurred: {str(e)}")
-
-
-if __name__ == "__main__":
-    # Example usage - returns just the diagnosis
-    image_path = "C:\\Users\\family_2\\Documents\\GitHub\\VitalArbor\\Segmented photos\\Cherry Tree_crop_out.png"
-    
-    try:
-        diagnosis = get_plant_diagnosis_groq(image_path)
-        print(diagnosis)
-        fixes = get_plant_fixes_groq(diagnosis, image_path)
-        print(fixes)
-    except Exception as e:
-        print(f"Error: {str(e)}")
