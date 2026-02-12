@@ -1,7 +1,6 @@
 import sam2_segmentation
 import tilt_detection
 import tilt_detection2
-import combo_tilt_detection
 import width_of_trunk
 import risk_score
 import tree_species_classification as tsp
@@ -82,16 +81,6 @@ def run_tilt_detection(analysis_path, detection_method):
             return (tilt, result_img, binary, trunk_lines_count)
         return None
     
-    elif detection_method == "3":
-        # Use combined method
-        print("\n=== Running Combined Tilt Detection (PCA + Lines) ===")
-        result = combo_tilt_detection.detect_tree_tilt_combined(
-            analysis_path,
-            pca_weight=0.6,
-            rotation_angles=[-10, -5, 0, 5, 10]
-        )
-        return result
-    
     else:
         # Use original method
         print("\n=== Running Original Tilt Detection (Line Intersection) ===")
@@ -166,8 +155,7 @@ def main():
         print("\nTilt Detection Methods:")
         print("1. Original (Line Intersection only)")
         print("2. PCA Method")
-        print("3. Combined (PCA + Line Intersection)")
-        detection_method = str(input("Choose detection method (1, 2, or 3): ")).strip()
+        detection_method = str(input("Choose detection method (1 or 2): ")).strip()
     
     # Convert bitmap files to PNG before processing
     print("\n=== Converting Bitmap Files to PNG ===")
@@ -236,8 +224,7 @@ def main():
     trunk_lines_count = 0
     method_name = {
         "1": "Original",
-        "2": "PCA",
-        "3": "Combined"
+        "2": "PCA"
     }.get(detection_method, "Original")
     
     # Try primary image
