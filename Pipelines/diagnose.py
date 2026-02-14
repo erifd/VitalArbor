@@ -40,7 +40,8 @@ Focus on identifying:
 Provide your assessment in exactly 3-4 complete sentences written as a single paragraph. Be factual and specific about what you observe. Note: This tree has been processed through image segmentation, which may affect its appearance.
 Your assessment should be personalized to this specific tree, based on the image provided. You may not make generalized statements.
 
-Do not include recommendations, predictions beyond immediate observations, or speculative statements."""
+Do not include recommendations, predictions beyond immediate observations, or speculative statements.
+Your statements should be extremely specific, highlighting key issues in the tree, and other and any problems that are visible, bein extremely specific in all the details."""
 
     try:
         response = requests.post(
@@ -121,7 +122,8 @@ Provide actionable recommendations organized as follows:
 3. PROFESSIONAL CONSULTATION: Clearly state when professional help is needed for something, and recommend what the homeowner should tell the arborist to help them with, and solve any problems that could lead to tree failure.
 
 Do not suggest any actions that could put a homeowner at risk of injury.
-Your recommendations should be personalized to this specific tree, based on the diagnosis and image provided. You may not make generalized statements."""
+Your recommendations should be personalized to this specific tree, based on the diagnosis and image provided. You may not make generalized statements.
+Be specific in what you are talking about, and for the actions that the owner can take"""
 
     try:
         response = requests.post(
