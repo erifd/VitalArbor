@@ -1,7 +1,6 @@
 import sam2_segmentation
 import tilt_detection
 import tilt_detection2
-import combo_tilt_detection
 import width_of_trunk
 import risk_score
 import tree_species_classification as tsp
@@ -15,7 +14,7 @@ import sys
 def run_tilt_detection(analysis_path, detection_method):
     """
     Run the selected tilt detection method on the given image path.
-    Returns: (tilt, result_img, binary, trunk_lines_count) or None if failed
+    Returns: (tilt, result_img, binary, trunk_lines_count, sweep_metrics) or None if failed
     """
     if detection_method == "2":
         # Use PCA method
@@ -24,36 +23,71 @@ def run_tilt_detection(analysis_path, detection_method):
         
         if result is not None:
             if isinstance(result, tuple):
-                tilt, result_img, binary, trunk_lines_count = result
+                # Check if it has sweep_metrics (new version) or not (old version)
+                if len(result) == 5:
+                    tilt, result_img, binary, trunk_lines_count, sweep_metrics = result
+                elif len(result) == 4:
+                    tilt, result_img, binary, trunk_lines_count = result
+                    sweep_metrics = None
+                else:
+                    tilt = float(result)
+                    result_img = None
+                    binary = None
+                    trunk_lines_count = 0
+                    sweep_metrics = None
             else:
                 tilt = float(result)
                 result_img = None
                 binary = None
                 trunk_lines_count = 0
-            return (tilt, result_img, binary, trunk_lines_count)
+                sweep_metrics = None
+            return (tilt, result_img, binary, trunk_lines_count, sweep_metrics)
         return None
-    
-    elif detection_method == "3":
-        # Use combined method
-        print("\n=== Running Combined Tilt Detection (PCA + Lines) ===")
-        result = combo_tilt_detection.detect_tree_tilt_combined(
-            analysis_path,
-            pca_weight=0.6,
-            rotation_angles=[-10, -5, 0, 5, 10]
-        )
-        return result
+
     
     else:
-        # Use original method
+        # Use original method (now returns sweep_metrics)
         print("\n=== Running Original Tilt Detection (Line Intersection) ===")
         result = tilt_detection.detect_tree_tilt(analysis_path)
         return result
 
-def display_and_save_results(tilt, result_img, binary, trunk_lines_count, analysis_path, method_name):
+def validate_tilt_measurement(tilt):
+    """
+    Check if tilt measurement is within realistic range.
+    Returns: True if valid, False if likely an error
+    """
+    MAX_REALISTIC_TILT = 50.0
+    
+    if tilt is None:
+        return False
+    
+    if tilt > MAX_REALISTIC_TILT:
+        print(f"\n{'='*60}")
+        print(f"WARNING: UNREALISTIC TILT DETECTED")
+        print(f"{'='*60}")
+        print(f"Measured tilt: {tilt:.2f}°")
+        print(f"Maximum realistic threshold: {MAX_REALISTIC_TILT}°")
+        print(f"\nPossible causes:")
+        print(f"  - Camera was tilted during photo capture")
+        print(f"  - Segmentation included branches/canopy instead of trunk")
+        print(f"  - Trunk cutout captured curved section")
+        print(f"  - Multiple trees in segmentation mask")
+        print(f"\nRecommendation: Retry with full segmented image (no trunk cutout)")
+        return False
+    
+    return True
+
+def display_and_save_results(tilt, result_img, binary, trunk_lines_count, sweep_metrics, analysis_path, method_name):
     """Display and save tilt detection results."""
     print(f"\n=== FINAL RESULT ===")
     print(f"{method_name} tilt angle: {tilt:.2f}° from vertical")
     print(f"Trunk lines detected: {trunk_lines_count}")
+    
+    if sweep_metrics:
+        print(f"\nSweep Analysis:")
+        print(f"  Type: {sweep_metrics.get('sweep_type', 'unknown')}")
+        print(f"  Curve Recovery: {sweep_metrics.get('curve_recovery', 0):.3f}")
+        print(f"  Curvature Score: {sweep_metrics.get('curvature_score', 0):.3f}")
     
     # Only display if we have images
     if result_img is not None and binary is not None:
@@ -95,6 +129,35 @@ def segment_and_get_path(image_path, description="image"):
         print(f"Warning: {description.capitalize()} not found or not provided: {image_path}")
         return None
 
+def retry_with_full_segmentation(tilt_photo, detection_method):
+    """
+    Retry tilt detection using full segmented image without trunk cutout.
+    Returns: (tilt, result_img, binary, trunk_lines_count, sweep_metrics) or None if failed
+    """
+    print(f"\n{'='*60}")
+    print("RETRYING WITH FULL SEGMENTATION (NO TRUNK CUTOUT)")
+    print(f"{'='*60}")
+    
+    # Re-segment the original tilt photo
+    segmented_photo_path = segment_and_get_path(tilt_photo, "tilt photo (retry)")
+    
+    if segmented_photo_path and os.path.exists(segmented_photo_path):
+        print(f"\nAttempting tilt detection on full segmented image: {segmented_photo_path}")
+        result = run_tilt_detection(segmented_photo_path, detection_method)
+        
+        if result is not None:
+            tilt, result_img, binary, trunk_lines_count, sweep_metrics = result
+            
+            # Validate the retry result
+            if validate_tilt_measurement(tilt):
+                return result
+            else:
+                print("\nRetry also produced unrealistic tilt measurement.")
+                return None
+    
+    print("\nERROR: Retry segmentation failed.")
+    return None
+
 def main():
     """Main function to run tree analysis pipeline with tilt detection options."""
     
@@ -114,8 +177,7 @@ def main():
         print("\nTilt Detection Methods:")
         print("1. Original (Line Intersection only)")
         print("2. PCA Method")
-        print("3. Combined (PCA + Line Intersection)")
-        detection_method = str(input("Choose detection method (1, 2, or 3): ")).strip()
+        detection_method = str(input("Choose detection method (1 or 2): ")).strip()
     
     # Initialize paths
     segmented_photo_path = None
@@ -132,22 +194,32 @@ def main():
     
     # Determine which image to analyze for tilt detection
     analysis_path = None
+    used_trunk_cutout = False
     
     if segmented_photo_path and os.path.exists(segmented_photo_path):
         if use_cutout_input == 'y':
             # Get trunk cutout
             print("\n=== Creating Trunk Cutout ===")
-            trunk_path = width_of_trunk.get_trunk_width_analysis(segmented_photo_path)
-            if trunk_path and os.path.exists(trunk_path):
-                print(f"Using trunk cutout: {trunk_path}")
-                analysis_path = trunk_path
-            else:
-                print("Warning: Could not create trunk cutout, using full segmented image")
+            try:
+                trunk_path = width_of_trunk.get_trunk_width_analysis(segmented_photo_path)
+                if trunk_path and os.path.exists(trunk_path):
+                    print(f"Using trunk cutout: {trunk_path}")
+                    analysis_path = trunk_path
+                    used_trunk_cutout = True
+                else:
+                    print("Warning: Could not create trunk cutout, using full segmented image")
+                    analysis_path = segmented_photo_path
+                    used_trunk_cutout = False
+            except Exception as e:
+                print(f"Warning: Trunk cutout failed with error: {e}")
+                print("Using full segmented image instead")
                 analysis_path = segmented_photo_path
+                used_trunk_cutout = False
         else:
             # Use full segmented image
             print(f"\nUsing full segmented image: {segmented_photo_path}")
             analysis_path = segmented_photo_path
+            used_trunk_cutout = False
     else:
         print("ERROR: Primary tilt photo segmentation failed or file not found")
     
@@ -156,10 +228,10 @@ def main():
     result_img = None
     binary = None
     trunk_lines_count = 0
+    sweep_metrics = None  # Add sweep_metrics initialization
     method_name = {
         "1": "Original",
         "2": "PCA",
-        "3": "Combined"
     }.get(detection_method, "Original")
     
     # Try primary image
@@ -168,15 +240,36 @@ def main():
         result = run_tilt_detection(analysis_path, detection_method)
         
         if result is not None:
-            tilt, result_img, binary, trunk_lines_count = result
-            display_and_save_results(tilt, result_img, binary, trunk_lines_count, analysis_path, method_name)
+            tilt, result_img, binary, trunk_lines_count, sweep_metrics = result
+            
+            # Validate tilt measurement
+            if validate_tilt_measurement(tilt):
+                display_and_save_results(tilt, result_img, binary, trunk_lines_count, sweep_metrics, analysis_path, method_name)
+            else:
+                # Unrealistic tilt detected
+                if used_trunk_cutout:
+                    # Retry without trunk cutout
+                    result = retry_with_full_segmentation(tilt_photo, detection_method)
+                    
+                    if result is not None:
+                        tilt, result_img, binary, trunk_lines_count, sweep_metrics = result
+                        display_and_save_results(tilt, result_img, binary, trunk_lines_count, sweep_metrics,
+                                               segmented_photo_path, f"{method_name} (Full Segmentation)")
+                    else:
+                        # Retry also failed, ask for backup
+                        tilt = None
+                else:
+                    # Already using full segmentation, ask for different image
+                    print("\nFull segmentation also produced unrealistic measurement.")
+                    print("Please provide a different image taken with level camera.")
+                    tilt = None
     
-    # If primary failed, ask for backup images
+    # If primary failed or produced invalid tilt, ask for backup images
     while tilt is None:
         print("\n" + "="*60)
-        print("TILT DETECTION FAILED")
+        print("TILT DETECTION NEEDS NEW IMAGE")
         print("="*60)
-        backup_path = input("\nEnter path to a backup image (or 'skip' to continue without tilt detection): ").strip()
+        backup_path = input("\nEnter path to a backup image with level camera (or 'skip' to continue without tilt detection): ").strip()
         
         if backup_path.lower() == 'skip':
             print("\nSkipping tilt detection. Continuing with analysis...")
@@ -186,8 +279,8 @@ def main():
             print(f"ERROR: File not found: {backup_path}")
             continue
         
-        # Segment the backup image
-        print("\n=== Segmenting Backup Image ===")
+        # Segment the backup image (always use full segmentation, no trunk cutout)
+        print("\n=== Segmenting Backup Image (Full Segmentation) ===")
         segmented_backup = segment_and_get_path(backup_path, "backup photo")
         
         if segmented_backup and os.path.exists(segmented_backup):
@@ -195,11 +288,18 @@ def main():
             result = run_tilt_detection(segmented_backup, detection_method)
             
             if result is not None:
-                tilt, result_img, binary, trunk_lines_count = result
-                display_and_save_results(tilt, result_img, binary, trunk_lines_count, segmented_backup, f"{method_name} (Backup)")
-                break
+                tilt, result_img, binary, trunk_lines_count, sweep_metrics = result
+                
+                # Validate backup tilt
+                if validate_tilt_measurement(tilt):
+                    display_and_save_results(tilt, result_img, binary, trunk_lines_count, sweep_metrics,
+                                           segmented_backup, f"{method_name} (Backup)")
+                    break
+                else:
+                    print("\nThis backup image also produced unrealistic tilt measurement.")
+                    tilt = None
             else:
-                print("\nTilt detection failed on this backup image as well.")
+                print("\nTilt detection failed on this backup image.")
         else:
             print("\nERROR: Failed to segment the backup image.")
     
@@ -228,7 +328,7 @@ def main():
     if tilt is not None:
         try:
             print("\n=== RISK ASSESSMENT ===")
-            combined_risk_score_val = risk_score.combined_tree_risk(multiplier, tilt, species, trunk_lines_count)
+            combined_risk_score_val = risk_score.combined_tree_risk(multiplier, tilt, species, trunk_lines_count, sweep_metrics)
             decision = risk_score.get_risk_category(combined_risk_score_val)
             print(f"Risk Score: {combined_risk_score_val:.1f}")
             print(f"Risk Category: {decision}")
@@ -237,10 +337,10 @@ def main():
             try:
                 diagnosis = diagnose.get_plant_diagnosis_groq(segmented_classification_path)
                 fixes = diagnose.get_plant_fixes_groq(diagnosis, segmented_classification_path)
-                risk_score.display_risk_gradient(combined_risk_score_val, tilt, diagnosis, fixes)
+                risk_score.display_risk_gradient(combined_risk_score_val, tilt, diagnosis, fixes, sweep_metrics)
             except Exception as e:
                 print(f"Warning: Could not get plant diagnosis: {e}")
-                risk_score.display_risk_gradient(combined_risk_score_val, tilt, "Diagnosis unavailable", "Fixes unavailable")
+                risk_score.display_risk_gradient(combined_risk_score_val, tilt, "Diagnosis unavailable", "Fixes unavailable", sweep_metrics)
         except Exception as e:
             print(f"Error calculating risk assessment: {e}")
     else:
