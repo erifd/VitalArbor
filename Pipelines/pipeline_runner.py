@@ -10,6 +10,8 @@ import cv2
 import os
 import numpy as np
 import sys
+from datetime import datetime, timedelta
+import re
 
 def run_tilt_detection(analysis_path, detection_method):
     """
@@ -43,8 +45,6 @@ def run_tilt_detection(analysis_path, detection_method):
                 sweep_metrics = None
             return (tilt, result_img, binary, trunk_lines_count, sweep_metrics)
         return None
-
-    
     else:
         # Use original method (now returns sweep_metrics)
         print("\n=== Running Original Tilt Detection (Line Intersection) ===")
@@ -158,6 +158,110 @@ def retry_with_full_segmentation(tilt_photo, detection_method):
     print("\nERROR: Retry segmentation failed.")
     return None
 
+def parse_calendar_schedule(schedule_text):
+    """
+    Parse the calendar schedule text into structured data.
+    Returns: list of dicts with category, description, days_between, num_times
+    """
+    pattern = r'<(\w+):\s*([^,]+),\s*(\d+),\s*(\d+)>'
+    matches = re.findall(pattern, schedule_text)
+    
+    schedule_items = []
+    for match in matches:
+        category, description, days_between, num_times = match
+        schedule_items.append({
+            'category': category,
+            'description': description.strip(),
+            'days_between': int(days_between),
+            'num_times': int(num_times)
+        })
+    
+    return schedule_items
+
+def display_calendar_view(schedule_items):
+    """
+    Display a visual calendar in the command prompt showing all treatment dates.
+    """
+    if not schedule_items:
+        print("\nNo calendar items to display.")
+        return
+    
+    print("\n" + "="*80)
+    print(" "*25 + "TREE TREATMENT CALENDAR")
+    print("="*80)
+    
+    # Calculate all event dates
+    today = datetime.now()
+    all_events = []
+    
+    for item in schedule_items:
+        category = item['category'].replace('_', ' ')
+        description = item['description']
+        days_between = item['days_between']
+        num_times = item['num_times']
+        
+        # Generate dates for this category
+        for i in range(num_times):
+            event_date = today + timedelta(days=(days_between * i))
+            all_events.append({
+                'date': event_date,
+                'category': category,
+                'description': description,
+                'occurrence': i + 1,
+                'total_occurrences': num_times
+            })
+    
+    # Sort events by date
+    all_events.sort(key=lambda x: x['date'])
+    
+    if not all_events:
+        print("\nNo scheduled events.")
+        return
+    
+    # Calculate calendar duration
+    start_date = all_events[0]['date']
+    end_date = all_events[-1]['date']
+    total_days = (end_date - start_date).days
+    
+    print(f"\nStart Date: {start_date.strftime('%B %d, %Y')}")
+    print(f"End Date:   {end_date.strftime('%B %d, %Y')}")
+    print(f"Duration:   {total_days} days (~{total_days // 7} weeks, ~{total_days // 30} months)")
+    print("\n" + "-"*80)
+    
+    # Display events in timeline format
+    current_month = None
+    for event in all_events:
+        event_month = event['date'].strftime('%B %Y')
+        
+        # Print month header if new month
+        if event_month != current_month:
+            current_month = event_month
+            print(f"\n{event_month.upper()}")
+            print("-" * 80)
+        
+        # Format the event line
+        date_str = event['date'].strftime('%a, %b %d')
+        occurrence_info = f"({event['occurrence']}/{event['total_occurrences']})"
+        
+        print(f"  [{date_str}]  {event['category']} {occurrence_info}")
+        print(f"               └─ {event['description']}")
+    
+    print("\n" + "="*80)
+    
+    # Display summary by category
+    print("\nTREATMENT SUMMARY BY CATEGORY:")
+    print("-"*80)
+    
+    category_counts = {}
+    for item in schedule_items:
+        category = item['category'].replace('_', ' ')
+        category_counts[category] = item['num_times']
+    
+    for category, count in category_counts.items():
+        print(f"  • {category}: {count} scheduled application(s)")
+    
+    print("="*80)
+
 def main():
     """Main function to run tree analysis pipeline with tilt detection options."""
     
@@ -228,7 +332,7 @@ def main():
     result_img = None
     binary = None
     trunk_lines_count = 0
-    sweep_metrics = None  # Add sweep_metrics initialization
+    sweep_metrics = None
     method_name = {
         "1": "Original",
         "2": "PCA",
@@ -304,8 +408,8 @@ def main():
             print("\nERROR: Failed to segment the backup image.")
     
     # Perform tree species classification
-    multiplier = 1.0  # Default multiplier
-    species = "Unknown"  # Default species
+    multiplier = 1.0
+    species = "Unknown"
     
     if segmented_classification_path and os.path.exists(segmented_classification_path):
         try:
@@ -324,6 +428,12 @@ def main():
     else:
         print("\nWarning: No classification photo available. Using default species values.")
     
+    # Initialize variables
+    combined_risk_score_val = None
+    decision = "Unknown"
+    diagnosis = "Diagnosis unavailable"
+    fixes = "Fixes unavailable"
+    
     # Calculate and display risk score (if tilt was detected)
     if tilt is not None:
         try:
@@ -332,22 +442,63 @@ def main():
             decision = risk_score.get_risk_category(combined_risk_score_val)
             print(f"Risk Score: {combined_risk_score_val:.1f}")
             print(f"Risk Category: {decision}")
-            
-            # Get diagnosis and fixes
-            try:
-                diagnosis = diagnose.get_plant_diagnosis_groq(segmented_classification_path)
-                fixes = diagnose.get_plant_fixes_groq(diagnosis, segmented_classification_path)
-                risk_score.display_risk_gradient(combined_risk_score_val, tilt, diagnosis, fixes, sweep_metrics)
-            except Exception as e:
-                print(f"Warning: Could not get plant diagnosis: {e}")
-                risk_score.display_risk_gradient(combined_risk_score_val, tilt, "Diagnosis unavailable", "Fixes unavailable", sweep_metrics)
         except Exception as e:
             print(f"Error calculating risk assessment: {e}")
+        
+        # Get diagnosis
+        try:
+            diagnosis = diagnose.get_plant_diagnosis_groq(segmented_classification_path)
+            print(f"Diagnosis: {diagnosis}")
+        except Exception as e:
+            print(f"ERROR getting diagnosis: {e}")
+        
+        # Get fixes
+        try:
+            fixes = diagnose.get_plant_fixes_groq(diagnosis, segmented_classification_path)
+            print(f"Recommendations: {fixes}")
+        except Exception as e:
+            print(f"ERROR getting recommendations: {e}")
+        
+        # Display risk gradient BEFORE calendar
+        try:
+            risk_score.display_risk_gradient(combined_risk_score_val, tilt, diagnosis, fixes, sweep_metrics)
+        except Exception as e:
+            print(f"ERROR displaying risk gradient: {e}")
+        
+        # NOW Generate and display calendar
+        print("\n" + "="*80)
+        print("=== GENERATING TREATMENT CALENDAR ===")
+        print("="*80)
+        
+        try:
+            calendar_schedule = diagnose.get_calendar_schedule_groq(diagnosis, fixes, segmented_classification_path)
+            
+            print("\nRAW CALENDAR OUTPUT:")
+            print("-" * 80)
+            print(calendar_schedule)
+            print("-" * 80)
+            
+            # Parse and display
+            schedule_items = parse_calendar_schedule(calendar_schedule)
+            print(f"\nParsed {len(schedule_items)} schedule items")
+            
+            if schedule_items:
+                display_calendar_view(schedule_items)
+            else:
+                print("\nWARNING: Could not parse calendar items.")
+                print("Expected format: <CATEGORY: description, number, number>")
+                
+        except Exception as cal_error:
+            print(f"\nERROR generating calendar: {cal_error}")
+            import traceback
+            traceback.print_exc()
     else:
         print("\n=== RISK ASSESSMENT ===")
         print("Cannot calculate risk score: Tilt detection failed on all available images.")
     
-    print("\n=== Analysis Complete ===")
+    print("\n" + "="*80)
+    print("=== Analysis Complete ===")
+    print("="*80)
 
 if __name__ == "__main__":
     main()
