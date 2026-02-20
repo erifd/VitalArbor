@@ -163,17 +163,26 @@ def parse_calendar_schedule(schedule_text):
     Parse the calendar schedule text into structured data.
     Returns: list of dicts with category, description, days_between, num_times
     """
-    pattern = r'<(\w+):\s*([^,]+),\s*(\d+),\s*(\d+)>'
+    # Updated pattern - greedily captures description including any commas,
+    # then takes the last two numbers at the end
+    pattern = r'<(\w+):\s*(.+),\s*(\d+),\s*(\d+)>'
     matches = re.findall(pattern, schedule_text)
     
     schedule_items = []
     for match in matches:
         category, description, days_between, num_times = match
+        days_between = int(days_between)
+        num_times = int(num_times)
+        
+        # Skip items with 0 occurrences (no action needed items)
+        if num_times == 0:
+            continue
+        
         schedule_items.append({
             'category': category,
             'description': description.strip(),
-            'days_between': int(days_between),
-            'num_times': int(num_times)
+            'days_between': days_between,
+            'num_times': num_times
         })
     
     return schedule_items
@@ -200,9 +209,10 @@ def display_calendar_view(schedule_items):
         days_between = item['days_between']
         num_times = item['num_times']
         
-        # Generate dates for this category
+        # Generate dates for this category - START FROM FIRST INTERVAL, NOT TODAY
         for i in range(num_times):
-            event_date = today + timedelta(days=(days_between * i))
+            # i+1 means first event is at days_between * 1, not days_between * 0
+            event_date = today + timedelta(days=(days_between * (i + 1)))
             all_events.append({
                 'date': event_date,
                 'category': category,
@@ -223,9 +233,10 @@ def display_calendar_view(schedule_items):
     end_date = all_events[-1]['date']
     total_days = (end_date - start_date).days
     
-    print(f"\nStart Date: {start_date.strftime('%B %d, %Y')}")
-    print(f"End Date:   {end_date.strftime('%B %d, %Y')}")
-    print(f"Duration:   {total_days} days (~{total_days // 7} weeks, ~{total_days // 30} months)")
+    print(f"\nDiagnosis Date: {today.strftime('%B %d, %Y')}")
+    print(f"First Treatment: {start_date.strftime('%B %d, %Y')}")
+    print(f"Final Treatment: {end_date.strftime('%B %d, %Y')}")
+    print(f"Treatment Duration: {total_days} days (~{total_days // 7} weeks, ~{total_days // 30} months)")
     print("\n" + "-"*80)
     
     # Display events in timeline format
