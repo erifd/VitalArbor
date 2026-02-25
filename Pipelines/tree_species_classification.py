@@ -2,8 +2,6 @@ import requests
 import API_Key_storage
 
 API_KEY = API_Key_storage.give_api_key()   # put your key here
-IMAGE_PATH = r"C:\Users\family_2\Documents\GitHub\VitalArbor\2025-26_Data_Images\11-9-2025\Crabapple_Afternoon_Images\Crabapple_Tree_Trunk.png"
-
 # url = f"https://my-api.plantnet.org/v2/identify/all?api-key={API_KEY}"
 
 # files = [
