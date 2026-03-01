@@ -95,8 +95,16 @@ def display_and_save_results(tilt, result_img, binary, trunk_lines_count, sweep_
         display_height = 600
         aspect_ratio = binary.shape[1] / binary.shape[0]
         display_width = int(display_height * aspect_ratio)
+
+        # FIX: Ensure binary is uint8 before passing to cvtColor.
+        # Some tilt detection methods return a boolean NumPy array, which
+        # OpenCV does not support. Converting to uint8 maps False→0, True→255.
+        if binary.dtype == bool:
+            binary_uint8 = (binary * 255).astype(np.uint8)
+        else:
+            binary_uint8 = binary.astype(np.uint8)
         
-        binary_display = cv2.resize(cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR), 
+        binary_display = cv2.resize(cv2.cvtColor(binary_uint8, cv2.COLOR_GRAY2BGR),
                                     (display_width, display_height))
         result_display = cv2.resize(result_img, (display_width, display_height))
         
