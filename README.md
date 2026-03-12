@@ -2,13 +2,15 @@
 Vital Arbor is a tree failure detection and risk assessment app in development to warn users if ther tree is about to fall. This app uses Meta's **Segment Anything 2 (SAM2)** model to segment images, and computer vision and YOLO11 to figure out the health of the tree. These pipelines will give you a risk score, which will be average to find the health of the tree, and if it is **at risk of falling** or, **tree failure is imminent, and the tree should be removed.**
 
 # Algorithms
-VitalArbor has 2 tilt estimation methods, and you can select which one to use.
+VitalArbor has 2 tilt estimation methods, and you can select which one to use. The first one is a novel algorithm not based off of anything, and the second one is a model based off of Principal Component Analysis and it has been adapted to detect tilt in trees.
 ![VitalArbor Arcitecture](Systems_Architecture_Diagram.png?raw=true)
-  ## The Math Model
+  ## The Offset Model
   This model employs OpenCV's Hough Transform, and Geometry to calculate the tilt angle of the tree.
+  ![Offset Model Architecture](The_Offset_Model_Architecture.png?raw=true)
   First, it uses Hough's Transform to detect all possible lines in the image, which is possible due to SAM2 filtering out the tree, with it's image segmentation program. Then, the pipeline removes all lines that do not intersect with the bottom, and looks at the bottom 50%, which is reasonable for the tree trunk. It calculates the offset from the center, and then uses arctan on all of the lines which had the offsets, and calculates the tilt angle from an average.
   
   After the tilt angle has been calculated, the pipeline finds the center of the tree trunk from the binary mask, and projects the tilt angle. It checks how well the tilt angle sits on the tree, and if it is beneath a certain threshold, redoes the tilt angle calculation, which may change the angle by some amount. The tilt detection algorithm also looks at the tree trunk general structure, and tells you if the trunk has a natural sweep, where the trunk grows back to a vertical state and adapts to the tilt, or if it has a plated sweep, and has more of a danger of falling.
+  
 
 Additionally, if you want to see more about the pipelines, and their current errors, visit [VitalArbor statistics Molab](https://molab.marimo.io/notebooks/nb_H1GAb8eWgBhqYmGYULynUu) to view changes in tilt angles, and errors. 
 Statistics will be published and updated as algorithms are fine-tuned.
