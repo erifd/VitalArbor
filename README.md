@@ -10,8 +10,15 @@ VitalArbor has 2 tilt estimation methods, and you can select which one to use. T
   First, it uses Hough's Transform to detect all possible lines in the image, which is possible due to SAM2 filtering out the tree, with it's image segmentation program. Then, the pipeline removes all lines that do not intersect with the bottom, and looks at the bottom 50%, which is reasonable for the tree trunk. It calculates the offset from the center, and then uses arctan on all of the lines which had the offsets, and calculates the tilt angle from an average.
   
   After the tilt angle has been calculated, the pipeline finds the center of the tree trunk from the binary mask, and projects the tilt angle. It checks how well the tilt angle sits on the tree, and if it is beneath a certain threshold, redoes the tilt angle calculation, which may change the angle by some amount. The tilt detection algorithm also looks at the tree trunk general structure, and tells you if the trunk has a natural sweep, where the trunk grows back to a vertical state and adapts to the tilt, or if it has a plated sweep, and has more of a danger of falling.
+  ## The PCA Model
+  This model employs Principal Component Analysis (PCA), made by Karl Earson, primarily found and used in python's skicit library.
+  ![How does PCA work?](PCA.jpeg?raw=true)
   
+  The PCA Model is simply an adapted form of actual PCA as shown in the diagram above. It takes the point it recieves of the tree, and tries to find the common points in between them, eventually finding a line of best fit once it has all the points, and there is an angle function that you can use to get the angle of the line to the bottom of the image.
 
+  After this tilt has been calculated, it does the same sweep detection and figures out the structure of the tree using the exact same algorithm as the tree. It will again run the same checking, checking the tilt line against the tree, and against the structure of the tree, trying to find discrepancies in the trunk itself. This is because trunk structure can be a dangerous factor in tree failure, as the trunk can split if it gets thin, or is leaning and branching out too much. It will also run the same tilt factor, checking how accurate the tilt is against the area the tree takes up itself.
+
+# Statistics
 Additionally, if you want to see more about the pipelines, and their current errors, visit [VitalArbor statistics Molab](https://molab.marimo.io/notebooks/nb_H1GAb8eWgBhqYmGYULynUu) to view changes in tilt angles, and errors. 
 Statistics will be published and updated as algorithms are fine-tuned.
 
