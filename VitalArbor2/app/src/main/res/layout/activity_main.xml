@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAF5E6"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:gravity="center">
+
+        <!-- Logo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌲"
+            android:textSize="80sp"
+            android:layout_marginTop="40dp"/>
+
+        <!-- App Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VitalArbor"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Sign In Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign In"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#2D3C1E"
+            android:layout_marginTop="32dp"/>
+
+        <!-- Username Label -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textColor="#3C5028"
+            android:textSize="13sp"
+            android:layout_marginTop="24dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"/>
+
+        <!-- Username Field -->
+        <EditText
+            android:id="@+id/usernameField"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:hint="Enter your username"
+            android:inputType="text"
+            android:maxLines="1"/>
+
+        <!-- Password Label -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Password"
+            android:textColor="#3C5028"
+            android:textSize="13sp"
+            android:layout_marginTop="16dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"/>
+
+        <!-- Password Field -->
+        <EditText
+            android:id="@+id/passwordField"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:hint="Enter password"
+            android:inputType="textPassword"
+            android:maxLines="1"/>
+
+        <!-- Sign In Button -->
+        <Button
+            android:id="@+id/signInBtn"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Sign In"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:backgroundTint="#8BC34A"
+            android:layout_marginTop="24dp"/>
+
+        <!-- Status Label -->
+        <TextView
+            android:id="@+id/statusLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="12sp"
+            android:text=""/>
+
+        <!-- Sign Up Link -->
+        <TextView
+            android:id="@+id/signUpBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Don't have an account? Sign Up"
+            android:textColor="#8B6F47"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:layout_marginTop="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"/>
+
+        <!-- Guest Button -->
+        <Button
+            android:id="@+id/guestBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:text="Continue as Guest"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#8B6F47"
+            android:layout_marginTop="8dp"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"/>
+
+        <!-- Debug Checkbox -->
+        <CheckBox
+            android:id="@+id/debugCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Debug Mode"
+            android:textSize="12sp"
+            android:layout_marginTop="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

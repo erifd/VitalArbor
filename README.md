@@ -78,7 +78,9 @@ Currently, only the segmentation pipeline using **SAM2** has worked, and you can
 4. Just copy down the path, but **DO NOT PUT QUOTES AROUND IT.**
 5. Here, you will have to segment the image like in the segmentation code.
 6. You will then get details about the tree, like the tilt angle.  
-</details>  
+</details>
+
+Additionally, if you want to see more about the pipelines, and their current errors, visit [VitalArbor statistics Molab](https://molab.marimo.io/notebooks/nb_H1GAb8eWgBhqYmGYULynUu) to view changes in tilt angles, and errors.   
 
 **IMPORTANT NOTE**
 

@@ -22,10 +22,13 @@ def get_trunk_width_analysis(mask_path):
         os.makedirs(target_dir)
 
     # ---------------------------------------------------
-    # 2. Load binary mask
+    # 2. Load image - preserve original format (RGB/RGBA)
     # ---------------------------------------------------
-    img = Image.open(mask_path).convert("L")
-    mask = np.array(img)
+    img_original = Image.open(mask_path)
+    
+    # Create grayscale version ONLY for analysis
+    img_gray = img_original.convert("L")
+    mask = np.array(img_gray)
 
     mask_bin = (mask > 127).astype(np.uint8) * 255
     h, w = mask_bin.shape
@@ -79,7 +82,7 @@ def get_trunk_width_analysis(mask_path):
     x_max = min(max(trunk_cols), w - 1)
 
     # ---------------------------------------------------
-    # 6. Save Logic (Using target_dir)
+    # 6. Save Logic - CROP ORIGINAL IMAGE, NOT GRAYSCALE
     # ---------------------------------------------------
     # Get the original filename (e.g. "tree1") from the path provided
     base_name = os.path.splitext(os.path.basename(mask_path))[0]
@@ -92,10 +95,11 @@ def get_trunk_width_analysis(mask_path):
     crop_save_path = os.path.join(target_dir, crop_name)
     vis_save_path = os.path.join(target_dir, vis_name)
 
-    # Save cropped image
-    cropped_trunk = img.crop((x_min, trunk_start, x_max, trunk_end))
+    # Save cropped image - USE ORIGINAL IMAGE to preserve color/alpha
+    cropped_trunk = img_original.crop((x_min, trunk_start, x_max, trunk_end))
     cropped_trunk.save(crop_save_path)
     print(f"Saved crop to: {crop_save_path}")
+    print(f"Cropped image mode: {cropped_trunk.mode}")  # Debug info
 
     # ---------------------------------------------------
     # 7. Visualization Logic

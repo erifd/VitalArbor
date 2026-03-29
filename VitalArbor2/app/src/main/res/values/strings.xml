@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">VitalArbor</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="guest_mode">Continue as Guest</string>
+    <string name="diagnosis">Get Diagnosis</string>
+    <string name="my_trees">My Trees</string>
+    <string name="identify_species">Identify Species</string>
+    <string name="logout">Logout</string>
+</resources>

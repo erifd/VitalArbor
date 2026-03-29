@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:gravity="center"
+    android:background="#FAF5E6">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Identify Tree Species"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#2D3C1E"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload a clear photo of the tree's leaves or bark"
+        android:textSize="12sp"
+        android:textColor="#646464"
+        android:layout_marginTop="8dp"/>
+
+    <ImageView
+        android:id="@+id/selectedImageView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="#FFFFFF"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Selected Image"/>
+
+    <TextView
+        android:id="@+id/selectedLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No image selected"
+        android:textSize="12sp"
+        android:textColor="#969696"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/selectBtn"
+        android:layout_width="200dp"
+        android:layout_height="45dp"
+        android:text="Select Image"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#87CEEB"
+        android:layout_marginTop="24dp"/>
+
+    <Button
+        android:id="@+id/identifyBtn"
+        android:layout_width="200dp"
+        android:layout_height="45dp"
+        android:text="Identify Species"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#8BC34A"
+        android:layout_marginTop="16dp"/>
+
+</LinearLayout>

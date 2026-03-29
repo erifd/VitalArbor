@@ -1,0 +1,7 @@
+<resources>
+    <string-array name="detection_methods">
+        <item>Original (Line Intersection)</item>
+        <item>PCA Method</item>
+        <item>Combined (PCA + Lines)</item>
+    </string-array>
+</resources>
